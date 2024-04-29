@@ -91,7 +91,7 @@ def _load_page(driver: Firefox, href: str) -> None:
     except Exception as e:
         log.critical(f"Can't load page: {e}")
         sys.exit(1)
-    log.info('Page loaded')
+    log.info('Page loaded.')
 
 
 def _update_page(driver: Firefox) -> None:
