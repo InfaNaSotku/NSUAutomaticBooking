@@ -48,6 +48,7 @@ async def _next(driver):
             except Exception as e:
                 log.critical(f'Login failed: {e}')
                 sys.exit(1)
+            log.info("Logged successfully!")
             await _next(driver)
 
         case _PageState.BOOKING_ACTIVE:
@@ -56,6 +57,7 @@ async def _next(driver):
             except Exception as e:
                 log.critical(f'Unbook failed: {e}')
                 sys.exit(1)
+            log.info("Unbooked successfully!")
             _update_page(driver)
             await _next(driver)
 
@@ -65,8 +67,10 @@ async def _next(driver):
             except Exception as e:
                 log.critical(f'Book failed: {e}')
                 sys.exit(1)
+            log.info("Booked successfully!")
 
         case _PageState.BOOKING_UNAVAILABLE:
+            log.info("Waiting for available device.")
             await asyncio.sleep(get_settings().book_wait)
             _update_page(driver)
             await _next(driver)
