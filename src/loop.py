@@ -23,7 +23,7 @@ class _PageState(Enum):
 
 
 async def _run() -> None:
-    log.info("Loop started.")
+    log.info('Loop started.')
 
     driver = get_driver()
     state = _load_page(driver, get_settings().devices_href)
@@ -42,7 +42,7 @@ async def _next(driver, state):
         case _PageState.LOGIN_REQUIRED:
             event.login(driver)
         case _PageState.UNKNOWN:
-            log.critical("Unknown page state!")
+            log.critical('Unknown page state!')
             sys.exit(1)
 
 
@@ -57,7 +57,7 @@ def _load_page(driver: Firefox, href: str) -> None:
     except Exception as e:
         log.critical(f"Can't load page: {e}")
         sys.exit(1)
-    log.info("Page loaded")
+    log.info('Page loaded')
     return _validate_page_state(driver)
 
 
@@ -72,7 +72,7 @@ def _update_page(driver: Firefox) -> _PageState:
     except Exception as e:
         log.critical(f"Can't update page: {e}")
         sys.exit(1)
-    log.info("Page reloaded.")
+    log.info('Page reloaded.')
     return _validate_page_state(driver)
 
 
