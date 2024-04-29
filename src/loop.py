@@ -3,10 +3,7 @@ from driver import get_driver
 from settings import get_settings
 from enum import Enum
 import logging as log
-from selenium.webdriver.common.by import By
 from selenium.webdriver import Firefox
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 import event
 import sys
 
@@ -109,12 +106,9 @@ def _validate_page_state(driver: Firefox) -> _PageState:
     if driver.title == 'Вход':
         return _PageState.LOGIN_REQUIRED
     elif driver.title == 'Бронирование':
-        devices = WebDriverWait(driver, 5).until(
-            EC.presence_of_all_elements_located((By.CLASS_NAME, 'device'))
-        )
-        for device in devices:
-            panel = device.find_element(By.CLASS_NAME, 'panel-body-inside')
-            button = panel.find_element(By.TAG_NAME, 'button')
+        buttons = event.get_devices_buttons(driver)
+
+        for button in buttons:
             if button.text == 'Отменить бронь':
                 return _PageState.BOOKING_ACTIVE
             elif button.text == 'Забронировать':

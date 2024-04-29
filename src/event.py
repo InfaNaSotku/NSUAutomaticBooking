@@ -1,4 +1,5 @@
 from selenium.webdriver import Firefox
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -28,12 +29,9 @@ def book(driver: Firefox) -> None:
     '''
     Books the device.
     '''
-    devices = WebDriverWait(driver, 5).until(
-        EC.presence_of_all_elements_located((By.CLASS_NAME, 'device'))
-    )
-    for device in devices:
-        panel = device.find_element(By.CLASS_NAME, 'panel-body-inside')
-        button = panel.find_element(By.TAG_NAME, 'button')
+    buttons = get_devices_buttons(driver)
+
+    for button in buttons:
         if button.text == 'Забронировать':
             button.click()
             modals = WebDriverWait(driver, 5).until(
@@ -58,3 +56,18 @@ def unbooks(driver: Firefox) -> None:
     '''
     Unbooks the device.
     '''
+
+
+def get_devices_buttons(driver: Firefox) -> list[WebElement]:
+    '''
+    Finds devices buttons and returns them.
+    '''
+    buttons: list[WebElement] = []
+    devices = WebDriverWait(driver, 5).until(
+        EC.presence_of_all_elements_located((By.CLASS_NAME, 'device'))
+    )
+    for device in devices:
+        panel = device.find_element(By.CLASS_NAME, 'panel-body-inside')
+        buttons.append(panel.find_element(By.TAG_NAME, 'button'))
+
+    return buttons
