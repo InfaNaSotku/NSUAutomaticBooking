@@ -3,10 +3,7 @@ from driver import get_driver
 from settings import get_settings
 from enum import Enum
 import logging as log
-from selenium.webdriver.common.by import By
 from selenium.webdriver import Firefox
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 import event
 import sys
 
@@ -21,37 +18,63 @@ def start() -> None:
 class _PageState(Enum):
     LOGIN_REQUIRED = 1,
     BOOKING_ACTIVE = 2,
-    BOOKING_INACTIVE = 3
-    UNKNOWN = 4
+    BOOKING_AVAILABLE = 3
+    BOOKING_UNAVAILABLE = 4
+    UNKNOWN = 5
 
 
 async def _run() -> None:
     log.info('Loop started.')
 
     driver = get_driver()
-    state = _load_page(driver, get_settings().devices_href)
+    _load_page(driver, get_settings().devices_href)
 
     while True:
-        await _next(driver, state)
+        await _next(driver)
         await asyncio.sleep(get_settings().page_live_time)
-        state = _update_page(driver)
+        _update_page(driver)
 
 
-async def _next(driver, state):
+async def _next(driver):
     '''
     Runs next page iteration.
     '''
+    state = _validate_page_state(driver)
+
     match state:
         case _PageState.LOGIN_REQUIRED:
             try:
                 event.login(driver)
             except Exception as e:
                 log.critical(f'Login failed: {e}')
-            await _next(driver, _validate_page_state(driver))
+                sys.exit(1)
+            log.info("Logged successfully!")
+            await _next(driver)
+
         case _PageState.BOOKING_ACTIVE:
-            pass
-        case _PageState.BOOKING_INACTIVE:
-            pass
+            try:
+                event.unbook(driver)
+            except Exception as e:
+                log.critical(f'Unbook failed: {e}')
+                sys.exit(1)
+            log.info("Unbooked successfully!")
+            _update_page(driver)
+            await _next(driver)
+
+        case _PageState.BOOKING_AVAILABLE:
+            try:
+                event.book(driver)
+            except Exception as e:
+                log.critical(f'Book failed: {e}')
+                sys.exit(1)
+            log.info("Booked successfully!")
+
+        case _PageState.BOOKING_UNAVAILABLE:
+            log.info("Waiting for available device.")
+            await asyncio.sleep(get_settings().book_wait)
+            _update_page(driver)
+            await _next(driver)
+
         case _PageState.UNKNOWN:
             log.critical('Unknown page state!')
             sys.exit(1)
@@ -69,10 +92,9 @@ def _load_page(driver: Firefox, href: str) -> None:
         log.critical(f"Can't load page: {e}")
         sys.exit(1)
     log.info('Page loaded')
-    return _validate_page_state(driver)
 
 
-def _update_page(driver: Firefox) -> _PageState:
+def _update_page(driver: Firefox) -> None:
     '''
     Updates page.
 
@@ -84,7 +106,6 @@ def _update_page(driver: Firefox) -> _PageState:
         log.critical(f"Can't update page: {e}")
         sys.exit(1)
     log.info('Page reloaded.')
-    return _validate_page_state(driver)
 
 
 def _validate_page_state(driver: Firefox) -> _PageState:
@@ -96,14 +117,13 @@ def _validate_page_state(driver: Firefox) -> _PageState:
     if driver.title == 'Вход':
         return _PageState.LOGIN_REQUIRED
     elif driver.title == 'Бронирование':
-        devices = WebDriverWait(driver, 5).until(
-            EC.presence_of_all_elements_located((By.CLASS_NAME, 'device'))
-        )
-        for device in devices:
-            panel = device.find_element(By.CLASS_NAME, 'panel-body-inside')
-            button = panel.find_element(By.TAG_NAME, 'button')
+        buttons = event.get_devices_buttons(driver)
+
+        for button in buttons:
             if button.text == 'Отменить бронь':
                 return _PageState.BOOKING_ACTIVE
-        return _PageState.BOOKING_INACTIVE
+            elif button.text == 'Забронировать':
+                return _PageState.BOOKING_AVAILABLE
+        return _PageState.BOOKING_UNAVAILABLE
 
     return _PageState.UNKNOWN
