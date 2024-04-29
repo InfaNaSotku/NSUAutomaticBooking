@@ -21,8 +21,9 @@ def start() -> None:
 class _PageState(Enum):
     LOGIN_REQUIRED = 1,
     BOOKING_ACTIVE = 2,
-    BOOKING_INACTIVE = 3
-    UNKNOWN = 4
+    BOOKING_AVAILABLE = 3
+    BOOKING_UNAVAILABLE = 4
+    UNKNOWN = 5
 
 
 async def _run() -> None:
@@ -47,11 +48,23 @@ async def _next(driver, state):
                 event.login(driver)
             except Exception as e:
                 log.critical(f'Login failed: {e}')
+                sys.exit(1)
             await _next(driver, _validate_page_state(driver))
+
         case _PageState.BOOKING_ACTIVE:
             pass
-        case _PageState.BOOKING_INACTIVE:
-            pass
+
+        case _PageState.BOOKING_AVAILABLE:
+            try:
+                event.book(driver)
+            except Exception as e:
+                log.critical(f'Book failed: {e}')
+                sys.exit(1)
+
+        case _PageState.BOOKING_UNAVAILABLE:
+            await asyncio.sleep(get_settings().book_wait)
+            await _next(driver, _update_page(driver))
+
         case _PageState.UNKNOWN:
             log.critical('Unknown page state!')
             sys.exit(1)
@@ -104,6 +117,8 @@ def _validate_page_state(driver: Firefox) -> _PageState:
             button = panel.find_element(By.TAG_NAME, 'button')
             if button.text == 'Отменить бронь':
                 return _PageState.BOOKING_ACTIVE
-        return _PageState.BOOKING_INACTIVE
+            elif button.text == 'Забронировать':
+                return _PageState.BOOKING_AVAILABLE
+        return _PageState.BOOKING_UNAVAILABLE
 
     return _PageState.UNKNOWN

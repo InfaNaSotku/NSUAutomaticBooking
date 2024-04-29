@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     email: str = Field(validation_alias="EMAIL")
     password: str = Field(validation_alias="PASSWORD")
     page_live_time: int = Field(validation_alias="PAGE_LIVE_TIME", default=600)
+    book_wait: int = Field(validation_alias="BOOK_WAIT", default=10)
 
     devices_href: str = Field(
         validation_alias="DEVICES_HREF",
