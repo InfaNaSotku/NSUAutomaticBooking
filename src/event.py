@@ -52,10 +52,31 @@ def book(driver: Firefox) -> None:
     raise RuntimeError('Unbooked device not found.')
 
 
-def unbooks(driver: Firefox) -> None:
+def unbook(driver: Firefox) -> None:
     '''
     Unbooks the device.
     '''
+    buttons = get_devices_buttons(driver)
+
+    for button in buttons:
+        if button.text == 'Отменить бронь':
+            button.click()
+            modals = WebDriverWait(driver, 5).until(
+                EC.presence_of_all_elements_located((By.CLASS_NAME, 'modal'))
+            )
+            for modal in modals:
+                try:
+                    footer = modal.find_element(By.CLASS_NAME, 'modal-footer')
+                    button = footer.find_element(By.TAG_NAME, 'button')
+                except Exception:
+                    continue
+
+                if button.text == 'Отменить бронь':
+                    button.click()
+                    return
+            return
+
+    raise RuntimeError('Booked device not found.')
 
 
 def get_devices_buttons(driver: Firefox) -> list[WebElement]:

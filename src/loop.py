@@ -27,18 +27,20 @@ async def _run() -> None:
     log.info('Loop started.')
 
     driver = get_driver()
-    state = _load_page(driver, get_settings().devices_href)
+    _load_page(driver, get_settings().devices_href)
 
     while True:
-        await _next(driver, state)
+        await _next(driver)
         await asyncio.sleep(get_settings().page_live_time)
-        state = _update_page(driver)
+        _update_page(driver)
 
 
-async def _next(driver, state):
+async def _next(driver):
     '''
     Runs next page iteration.
     '''
+    state = _validate_page_state(driver)
+
     match state:
         case _PageState.LOGIN_REQUIRED:
             try:
@@ -46,10 +48,16 @@ async def _next(driver, state):
             except Exception as e:
                 log.critical(f'Login failed: {e}')
                 sys.exit(1)
-            await _next(driver, _validate_page_state(driver))
+            await _next(driver)
 
         case _PageState.BOOKING_ACTIVE:
-            pass
+            try:
+                event.unbook(driver)
+            except Exception as e:
+                log.critical(f'Unbook failed: {e}')
+                sys.exit(1)
+            _update_page(driver)
+            await _next(driver)
 
         case _PageState.BOOKING_AVAILABLE:
             try:
@@ -60,7 +68,8 @@ async def _next(driver, state):
 
         case _PageState.BOOKING_UNAVAILABLE:
             await asyncio.sleep(get_settings().book_wait)
-            await _next(driver, _update_page(driver))
+            _update_page(driver)
+            await _next(driver)
 
         case _PageState.UNKNOWN:
             log.critical('Unknown page state!')
@@ -79,10 +88,9 @@ def _load_page(driver: Firefox, href: str) -> None:
         log.critical(f"Can't load page: {e}")
         sys.exit(1)
     log.info('Page loaded')
-    return _validate_page_state(driver)
 
 
-def _update_page(driver: Firefox) -> _PageState:
+def _update_page(driver: Firefox) -> None:
     '''
     Updates page.
 
@@ -94,7 +102,6 @@ def _update_page(driver: Firefox) -> _PageState:
         log.critical(f"Can't update page: {e}")
         sys.exit(1)
     log.info('Page reloaded.')
-    return _validate_page_state(driver)
 
 
 def _validate_page_state(driver: Firefox) -> _PageState:
