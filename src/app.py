@@ -1,8 +1,13 @@
+from configure import configure
+import loop
+
+
 def run():
     '''
     Entry app point.
     '''
-    print('Hello wolrd!')
+    configure()
+    loop.start()
 
 
 if __name__ == '__main__':
