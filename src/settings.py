@@ -8,6 +8,7 @@ import sys
 class Settings(BaseSettings):
     email: str = Field(validation_alias="EMAIL")
     password: str = Field(validation_alias="PASSWORD")
+    page_live_time: int = Field(validation_alias="PAGE_LIVE_TIME", default=600)
 
     devices_href: str = Field(
         validation_alias="DEVICES_HREF",
