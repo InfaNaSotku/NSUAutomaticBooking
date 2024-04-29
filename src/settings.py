@@ -9,6 +9,11 @@ class Settings(BaseSettings):
     email: str = Field(validation_alias="EMAIL")
     password: str = Field(validation_alias="PASSWORD")
 
+    devices_href: str = Field(
+        validation_alias="DEVICES_HREF",
+        default="https://lk.1clc.ru/DeviceCurrent/DevicesCurrent"
+    )
+
 
 @lru_cache
 def get_settings() -> Settings:
