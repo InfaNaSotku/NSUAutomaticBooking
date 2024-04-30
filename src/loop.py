@@ -10,9 +10,17 @@ import sys
 
 def start() -> None:
     '''
-    Started app loop.
+    Starts app loop.
     '''
-    asyncio.run(_run())
+    try:
+        asyncio.run(_run())
+    except KeyboardInterrupt:
+        log.info("Closed successfully!")
+        if sys.excepthook is sys.__excepthook__:
+            def _no_traceback_excepthook(exc_type, exc_val, traceback):
+                pass
+            sys.excepthook = _no_traceback_excepthook
+        raise
 
 
 class _PageState(Enum):
@@ -24,6 +32,9 @@ class _PageState(Enum):
 
 
 async def _run() -> None:
+    '''
+    Runs the loop.
+    '''
     log.info('Loop started.')
 
     driver = get_driver()
@@ -43,48 +54,77 @@ async def _next(driver):
 
     match state:
         case _PageState.LOGIN_REQUIRED:
-            try:
-                event.login(driver)
-            except Exception as e:
-                log.critical(f'Login failed: {e}')
-                sys.exit(1)
-            log.info("Logged successfully!")
-            await _next(driver)
+            await _login(driver)
 
         case _PageState.BOOKING_ACTIVE:
-            try:
-                event.unbook(driver)
-            except Exception as e:
-                log.critical(f'Unbook failed: {e}')
-                sys.exit(1)
-            log.info("Unbooked successfully!")
-            _update_page(driver)
-            await _next(driver)
+            await _unbook(driver)
 
         case _PageState.BOOKING_AVAILABLE:
-            try:
-                event.book(driver)
-            except Exception as e:
-                log.critical(f'Book failed: {e}')
-                sys.exit(1)
-            log.info("Booked successfully!")
+            _book(driver)
 
         case _PageState.BOOKING_UNAVAILABLE:
-            log.info("Waiting for available device.")
-            await asyncio.sleep(get_settings().book_wait)
-            _update_page(driver)
-            await _next(driver)
+            await _wait_until_available(driver)
 
         case _PageState.UNKNOWN:
             log.critical('Unknown page state!')
             sys.exit(1)
 
 
+def _book(driver):
+    '''
+    Books the device by `event.book`.
+    '''
+    try:
+        event.book(driver)
+    except Exception as e:
+        log.critical(f'Book failed: {e}')
+        sys.exit(1)
+    log.info("Booked successfully!")
+
+
+async def _login(driver):
+    '''
+    Logins user in booking login page by `event.login`.
+    '''
+    try:
+        event.login(driver)
+    except Exception as e:
+        log.critical(f'Login failed: {e}')
+        sys.exit(1)
+    if _validate_page_state(driver) == _PageState.LOGIN_REQUIRED:
+        log.critical("Login failed: Incorrect data.")
+        exit(1)
+    log.info("Logged successfully!")
+    await _next(driver)
+
+
+async def _unbook(driver):
+    '''
+    Unbooks the device by `event.unbook`.
+    '''
+    try:
+        event.unbook(driver)
+    except Exception as e:
+        log.critical(f'Unbook failed: {e}')
+        sys.exit(1)
+    log.info("Unbooked successfully!")
+    _update_page(driver)
+    await _next(driver)
+
+
+async def _wait_until_available(driver):
+    '''
+    Waits until at least one device becomes available.
+    '''
+    log.info("Waiting for available device.")
+    await asyncio.sleep(get_settings().book_wait)
+    _update_page(driver)
+    await _next(driver)
+
+
 def _load_page(driver: Firefox, href: str) -> None:
     '''
     Loads page.
-
-    - Returns page state.
     '''
     try:
         driver.get(href)
@@ -97,8 +137,6 @@ def _load_page(driver: Firefox, href: str) -> None:
 def _update_page(driver: Firefox) -> None:
     '''
     Updates page.
-
-    - Returns page state.
     '''
     try:
         driver.refresh()
