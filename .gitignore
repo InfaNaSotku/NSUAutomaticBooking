@@ -139,3 +139,4 @@ dotnet-bin
 .metadata/
 
 .env
+*.egg-info
