@@ -7,7 +7,7 @@ def run():
     Entry app point.
     '''
     configure()
-    loop.start()
+    loop._start()
 
 
 if __name__ == '__main__':
