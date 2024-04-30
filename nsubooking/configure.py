@@ -1,6 +1,9 @@
 import logging
-from logger import BookingFormatter, logger
-from settings import get_settings
+from nsubooking.logger import BookingFormatter, logger
+from nsubooking.settings import get_settings
+
+
+__all__ = []
 
 
 def configure():

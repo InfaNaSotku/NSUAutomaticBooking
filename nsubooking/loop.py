@@ -1,11 +1,14 @@
 import asyncio
-from driver import get_driver
-from settings import get_settings
+from nsubooking.driver import get_driver
+from nsubooking.settings import get_settings
 from enum import Enum
-from logger import logger as log
+from nsubooking.logger import logger as log
 from selenium.webdriver import Firefox
-import event
+import nsubooking.event as event
 import sys
+
+
+__all__ = []
 
 
 def _start() -> None:
@@ -13,7 +16,7 @@ def _start() -> None:
     Starts app loop.
     '''
     try:
-        asyncio.run(run())
+        asyncio.run(run_loop())
     except KeyboardInterrupt:
         log.info("Closed successfully!")
         if sys.excepthook is sys.__excepthook__:
@@ -31,7 +34,7 @@ class _PageState(Enum):
     UNKNOWN = 5
 
 
-async def run() -> None:
+async def run_loop() -> None:
     '''
     Runs the loop.
 

@@ -2,8 +2,11 @@ from pydantic_settings import BaseSettings
 from pydantic import Field
 from functools import lru_cache
 from dotenv import load_dotenv
-from logger import logger as log
+from nsubooking.logger import logger as log
 import sys
+
+
+__all__ = []
 
 
 class Settings(BaseSettings):

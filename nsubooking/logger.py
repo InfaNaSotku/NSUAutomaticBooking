@@ -1,6 +1,9 @@
 import logging
 
 
+__all__ = []
+
+
 class BookingFormatter(logging.Formatter):
 
     green = '\x1b[32;20m'
@@ -10,7 +13,7 @@ class BookingFormatter(logging.Formatter):
     reset = '\x1b[0m'
     levelname_format = '%(levelname)s'
     format_str = ':     [%(asctime)s] [%(name)s] %(message)s'
-    datefmt = '%d-%m-%Y %H:%M:%S'
+    date_format = '%d-%m-%Y %H:%M:%S'
 
     COLORS = {
         logging.INFO: green,
@@ -26,7 +29,7 @@ class BookingFormatter(logging.Formatter):
 
     def format(self, record):
         fmt = self.colorise(record.levelno)
-        formatter = logging.Formatter(fmt=fmt, datefmt=self.datefmt)
+        formatter = logging.Formatter(fmt=fmt, datefmt=self.date_format)
         return formatter.format(record)
 
 
