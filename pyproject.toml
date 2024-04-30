@@ -17,8 +17,8 @@ classifiers = [
 dependencies = ['selenium', 'pydantic', 'pydantic-settings']
 
 [project.urls]
-Homepage = 'https://github.com/InfaNaSotku/NSUAutomaticBooking'
-Issues = 'https://github.com/InfaNaSotku/NSUAutomaticBooking/issues'
+Homepage = 'https://github.com/InfaNaSotku/nsubooking'
+Issues = 'https://github.com/InfaNaSotku/nsubooking/issues'
 
 [tool.hatch.build.targets.wheel]
 [tool.hatch.build.targets.sdist]
@@ -37,3 +37,6 @@ exclude = [
     'scripts',
     '*.egg-info',
 ]
+
+[tool.hatch.version]
+path = "nsubooking/__init__.py"
