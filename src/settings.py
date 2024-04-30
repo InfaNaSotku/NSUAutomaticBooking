@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 from pydantic import Field
 from functools import lru_cache
 from dotenv import load_dotenv
-import logging
+from logger import logger as log
 import sys
 
 
@@ -29,5 +29,5 @@ def get_settings() -> Settings:
         settings = Settings()
         return settings
     except Exception as e:
-        logging.critical(f"Settings generated with error: {e}")
+        log.critical(f"Settings generated with error: {e}")
         sys.exit()

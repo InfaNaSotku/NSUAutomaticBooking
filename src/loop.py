@@ -2,18 +2,18 @@ import asyncio
 from driver import get_driver
 from settings import get_settings
 from enum import Enum
-import logging as log
+from logger import logger as log
 from selenium.webdriver import Firefox
 import event
 import sys
 
 
-def start() -> None:
+def _start() -> None:
     '''
     Starts app loop.
     '''
     try:
-        asyncio.run(_run())
+        asyncio.run(run())
     except KeyboardInterrupt:
         log.info("Closed successfully!")
         if sys.excepthook is sys.__excepthook__:
@@ -31,9 +31,13 @@ class _PageState(Enum):
     UNKNOWN = 5
 
 
-async def _run() -> None:
+async def run() -> None:
     '''
     Runs the loop.
+
+    - Warning!
+    If you run method directly you need
+    run `configure` by hand.
     '''
     log.info('Loop started.')
 
