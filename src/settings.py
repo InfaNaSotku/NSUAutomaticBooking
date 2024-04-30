@@ -1,6 +1,7 @@
 from pydantic_settings import BaseSettings
 from pydantic import Field
 from functools import lru_cache
+from dotenv import load_dotenv
 import logging
 import sys
 
@@ -23,6 +24,7 @@ def get_settings() -> Settings:
 
     Settings will be generate only for first call.
     '''
+    load_dotenv()
     try:
         settings = Settings()
         return settings
