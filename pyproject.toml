@@ -1,19 +1,39 @@
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ['hatchling']
+build-backend = 'hatchling.build'
+
 [project]
-name = "nsubooking"
-version = "1.0.0.0"
-authors = [{ name = "Maxim Gerasimov", email = "infanasotku@gmail.com" }]
-description = "Automatic booking of washing machines at NSU. "
-readme = "README.md"
-requires-python = ">=3.11"
+name = 'nsubooking'
+version = '1.0.1'
+authors = [{ name = 'Maxim Gerasimov', email = 'infanasotku@gmail.com' }]
+description = 'Automatic booking of washing machines at NSU. '
+readme = 'README.md'
+requires-python = '>=3.11'
 classifiers = [
-    "Programming Language :: Python :: 3.11",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
+    'Programming Language :: Python :: 3.11',
+    'License :: OSI Approved :: MIT License',
+    'Operating System :: OS Independent',
 ]
+dependencies = ['selenium', 'pydantic', 'pydantic-settings']
 
 [project.urls]
-Homepage = "https://github.com/InfaNaSotku/NSUAutomaticBooking"
-Issues = "https://github.com/InfaNaSotku/NSUAutomaticBooking/issues"
+Homepage = 'https://github.com/InfaNaSotku/NSUAutomaticBooking'
+Issues = 'https://github.com/InfaNaSotku/NSUAutomaticBooking/issues'
+
+[tool.hatch.build.targets.wheel]
+[tool.hatch.build.targets.sdist]
+include = ['/nsubooking']
+
+[tool.hatch.build]
+exclude = [
+    '.git',
+    'build',
+    'dist',
+    'venv',
+    '.venv',
+    'docs',
+    'tests',
+    'dev',
+    'scripts',
+    '*.egg-info',
+]

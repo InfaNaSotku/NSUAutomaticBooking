@@ -1,6 +1,9 @@
 import logging
 
 
+__all__ = []
+
+
 class BookingFormatter(logging.Formatter):
 
     green = '\x1b[32;20m'

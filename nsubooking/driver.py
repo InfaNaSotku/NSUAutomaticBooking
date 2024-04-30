@@ -3,6 +3,9 @@ from selenium.webdriver import Firefox
 from selenium.webdriver.firefox.options import Options
 
 
+__all__ = []
+
+
 @lru_cache
 def get_driver() -> Firefox:
     options = Options()
